@@ -6,9 +6,9 @@ sudo mkswap /swapfile
 sudo swapon /swapfile
 
 # Prompt for SOCKS5 proxy credentials
-echo -e "Please enter the username for the socks5 proxy:"
+echo "Please enter the username for the socks5 proxy:"
 read username
-echo -e "Please enter the password for the socks5 proxy:"
+echo "Please enter the password for the socks5 proxy:"
 read -s password
 
 # Update repositories
@@ -45,9 +45,7 @@ if sudo ufw status | grep -q "Status: active"; then
 fi
 
 # Check if iptables is active and open port 1080 if needed
-if sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:1080"; then
-    echo "Port 1080 is already open in iptables."
-else
+if ! sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:1080"; then
     sudo iptables -A INPUT -p tcp --dport 1080 -j ACCEPT
 fi
 

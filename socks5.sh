@@ -17,6 +17,10 @@ sudo apt update -y
 # Install dante-server, Apache, and UFW
 sudo apt install dante-server apache2 ufw -y
 
+# Enable Apache proxy modules
+sudo a2enmod proxy
+sudo a2enmod proxy_http
+
 # Create the Dante configuration file
 sudo bash -c 'cat <<EOF > /etc/danted.conf
 logoutput: /var/log/danted.log

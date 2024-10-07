@@ -14,8 +14,8 @@ read -s password
 # Update repositories
 sudo apt update -y
 
-# Install dante-server and Apache
-sudo apt install dante-server apache2 -y
+# Install dante-server, Apache, and UFW
+sudo apt install dante-server apache2 ufw -y
 
 # Create the Dante configuration file
 sudo bash -c 'cat <<EOF > /etc/danted.conf
@@ -84,7 +84,9 @@ EOF'
 
 # Enable the new site and restart Apache
 sudo a2ensite socks5-proxy.conf
-sudo systemctl restart apache2
+sudo systemctl reload apache2
 
-# Remove systemd-oomd
-sudo apt remove systemd-oomd -y
+# Remove systemd-oomd if installed
+if dpkg -l | grep -q systemd-oomd; then
+    sudo apt remove systemd-oomd -y
+fi

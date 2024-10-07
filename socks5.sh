@@ -1,8 +1,11 @@
 #!/bin/bash
+# Create swap space
 sudo fallocate -l 8G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
+
+# Prompt for SOCKS5 proxy credentials
 echo -e "Please enter the username for the socks5 proxy:"
 read username
 echo -e "Please enter the password for the socks5 proxy:"
@@ -11,15 +14,15 @@ read -s password
 # Update repositories
 sudo apt update -y
 
-# Install dante-server
-sudo apt install dante-server -y
+# Install dante-server and Apache
+sudo apt install dante-server apache2 -y
 
-# Create the configuration file
+# Create the Dante configuration file
 sudo bash -c 'cat <<EOF > /etc/danted.conf
 logoutput: /var/log/danted.log
 internal: 0.0.0.0 port = 1080
 external: ens160
-method: username none
+method: username
 user.privileged: root
 user.notprivileged: nobody
 client pass {
@@ -54,4 +57,36 @@ sudo systemctl restart danted
 # Enable dante-server to start at boot
 sudo systemctl enable danted
 
-sudo apt remove systemd-oomd
+# Install Apache utils for htpasswd
+sudo apt install apache2-utils -y
+
+# Create .htpasswd file for Apache authentication
+sudo htpasswd -b -c /etc/apache2/.htpasswd $username $password
+
+# Create Apache configuration for SOCKS5 proxy
+sudo bash -c 'cat <<EOF > /etc/apache2/sites-available/socks5-proxy.conf
+<VirtualHost *:80>
+    ServerName yourdomain.com
+
+    # Proxy settings
+    ProxyRequests On
+    ProxyVia On
+
+    <Proxy *>
+        AuthType Basic
+        AuthName "Restricted Area"
+        AuthUserFile /etc/apache2/.htpasswd
+        Require valid-user
+    </Proxy>
+
+    ProxyPass /socks5 http://localhost:1080/
+    ProxyPassReverse /socks5 http://localhost:1080/
+</VirtualHost>
+EOF'
+
+# Enable the new site and restart Apache
+sudo a2ensite socks5-proxy.conf
+sudo systemctl restart apache2
+
+# Remove systemd-oomd
+sudo apt remove systemd-oomd -y

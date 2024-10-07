@@ -24,7 +24,7 @@ sudo a2enmod proxy_http
 # Create the Dante configuration file
 sudo bash -c 'cat <<EOF > /etc/danted.conf
 logoutput: /var/log/danted.log
-internal: 0.0.0.0 port = 1080
+internal: 0.0.0.0 port = 1090
 external: ens160
 method: username
 user.privileged: root
@@ -43,18 +43,18 @@ EOF'
 sudo useradd --shell /usr/sbin/nologin $username
 echo "$username:$password" | sudo chpasswd
 
-# Check if UFW is active and open port 1080 if needed
+# Check if UFW is active and open port 1090 if needed
 if sudo ufw status | grep -q "Status: active"; then
-    sudo ufw allow 1080/tcp
-    sudo ufw allow 8090/tcp
+    sudo ufw allow 1090/tcp
+    sudo ufw allow 8095/tcp
 fi
 
-# Check if iptables is active and open port 1080 and 8090 if needed
-if ! sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:1080"; then
-    sudo iptables -A INPUT -p tcp --dport 1080 -j ACCEPT
+# Check if iptables is active and open port 1090 and 8095 if needed
+if ! sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:1090"; then
+    sudo iptables -A INPUT -p tcp --dport 1090 -j ACCEPT
 fi
-if ! sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:8090"; then
-    sudo iptables -A INPUT -p tcp --dport 8090 -j ACCEPT
+if ! sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:8095"; then
+    sudo iptables -A INPUT -p tcp --dport 8095 -j ACCEPT
 fi
 
 # Restart dante-server
@@ -71,7 +71,7 @@ sudo htpasswd -b -c /etc/apache2/.htpasswd $username $password
 
 # Create Apache configuration for SOCKS5 proxy
 sudo bash -c 'cat <<EOF > /etc/apache2/sites-available/socks5-proxy.conf
-<VirtualHost *:8090>
+<VirtualHost *:8095>
     ServerName yourdomain.com
 
     <Proxy *>
@@ -81,8 +81,8 @@ sudo bash -c 'cat <<EOF > /etc/apache2/sites-available/socks5-proxy.conf
         Require valid-user
     </Proxy>
 
-    ProxyPass /socks5 http://localhost:1080/
-    ProxyPassReverse /socks5 http://localhost:1080/
+    ProxyPass /socks5 http://localhost:1090/
+    ProxyPassReverse /socks5 http://localhost:1090/
 </VirtualHost>
 EOF'
 

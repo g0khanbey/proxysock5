@@ -46,11 +46,15 @@ echo "$username:$password" | sudo chpasswd
 # Check if UFW is active and open port 1080 if needed
 if sudo ufw status | grep -q "Status: active"; then
     sudo ufw allow 1080/tcp
+    sudo ufw allow 4050/tcp
 fi
 
-# Check if iptables is active and open port 1080 if needed
+# Check if iptables is active and open port 1080 and 4050 if needed
 if ! sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:1080"; then
     sudo iptables -A INPUT -p tcp --dport 1080 -j ACCEPT
+fi
+if ! sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:4050"; then
+    sudo iptables -A INPUT -p tcp --dport 4050 -j ACCEPT
 fi
 
 # Restart dante-server
@@ -89,13 +93,13 @@ EOF'
 # Disable default Apache site
 sudo a2dissite 000-default.conf
 
-# Enable the new site and start/restart Apache
+# Enable the new site and restart Apache
 sudo a2ensite socks5-proxy.conf
 
 # Test Apache configuration
 if apachectl configtest; then
+    sudo systemctl stop apache2
     sudo systemctl start apache2
-    sudo systemctl reload apache2
 else
     echo "Apache configuration error. Please check the configuration."
 fi

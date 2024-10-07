@@ -63,7 +63,7 @@ sudo htpasswd -b -c /etc/apache2/.htpasswd $username $password
 
 # Create Apache configuration for SOCKS5 proxy
 sudo bash -c 'cat <<EOF > /etc/apache2/sites-available/socks5-proxy.conf
-<VirtualHost *:80>
+<VirtualHost *:4050>
     ServerName yourdomain.com
 
     # Proxy settings
@@ -82,9 +82,19 @@ sudo bash -c 'cat <<EOF > /etc/apache2/sites-available/socks5-proxy.conf
 </VirtualHost>
 EOF'
 
-# Enable the new site and restart Apache
+# Disable default Apache site
+sudo a2dissite 000-default.conf
+
+# Enable the new site and start/restart Apache
 sudo a2ensite socks5-proxy.conf
-sudo systemctl reload apache2
+
+# Test Apache configuration
+if apachectl configtest; then
+    sudo systemctl start apache2
+    sudo systemctl reload apache2
+else
+    echo "Apache configuration error. Please check the configuration."
+fi
 
 # Remove systemd-oomd if installed
 if dpkg -l | grep -q systemd-oomd; then

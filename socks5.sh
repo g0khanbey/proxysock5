@@ -46,15 +46,15 @@ echo "$username:$password" | sudo chpasswd
 # Check if UFW is active and open port 1080 if needed
 if sudo ufw status | grep -q "Status: active"; then
     sudo ufw allow 1080/tcp
-    sudo ufw allow 4050/tcp
+    sudo ufw allow 8081/tcp
 fi
 
-# Check if iptables is active and open port 1080 and 4050 if needed
+# Check if iptables is active and open port 1080 and 8081 if needed
 if ! sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:1080"; then
     sudo iptables -A INPUT -p tcp --dport 1080 -j ACCEPT
 fi
-if ! sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:4050"; then
-    sudo iptables -A INPUT -p tcp --dport 4050 -j ACCEPT
+if ! sudo iptables -L | grep -q "ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:8081"; then
+    sudo iptables -A INPUT -p tcp --dport 8081 -j ACCEPT
 fi
 
 # Restart dante-server
@@ -71,7 +71,7 @@ sudo htpasswd -b -c /etc/apache2/.htpasswd $username $password
 
 # Create Apache configuration for SOCKS5 proxy
 sudo bash -c 'cat <<EOF > /etc/apache2/sites-available/socks5-proxy.conf
-<VirtualHost *:4050>
+<VirtualHost *:8081>
     ServerName yourdomain.com
 
     # Proxy settings

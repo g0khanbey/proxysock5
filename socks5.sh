@@ -21,13 +21,14 @@ user.privileged: root
 user.notprivileged: nobody
 
 client pass {
-    from: 0.0.0.0/0 to: 0.0.0.0/0
+    from: 95.10.237.96/32 to: 0.0.0.0/0
+    log: connect disconnect error
+}
+socks pass {
+    from: 95.10.237.96/32 to: 0.0.0.0/0
+    log: connect disconnect error
 }
 
-socks pass {
-    from: 0.0.0.0/0 to: 0.0.0.0/0
-}
-EOF'
 
 # Add user with password
 sudo useradd --shell /usr/sbin/nologin $username

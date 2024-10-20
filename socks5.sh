@@ -16,19 +16,26 @@ sudo bash -c 'cat <<EOF > /etc/danted.conf
 logoutput: /var/log/danted.log
 internal: 0.0.0.0 port = 1080
 external: ens160
-socksmethod: username
+method: username none
 user.privileged: root
 user.notprivileged: nobody
-
 client pass {
-    from: 95.10.237.96/32 to: 0.0.0.0/0
+    from: 178.233.148.230/32 to: 0.0.0.0/0
     log: connect disconnect error
 }
 socks pass {
-    from: 95.10.237.96/32 to: 0.0.0.0/0
+    from: 178.233.148.230/32 to: 0.0.0.0/0
     log: connect disconnect error
 }
-
+client pass {
+    from: 0.0.0.0/32 to: 0.0.0.0/0
+    log: connect disconnect error
+}
+socks pass {
+    from: 0.0.0.0/32 to: 0.0.0.0/0
+    log: connect disconnect error
+}
+EOF'
 
 # Add user with password
 sudo useradd --shell /usr/sbin/nologin $username
